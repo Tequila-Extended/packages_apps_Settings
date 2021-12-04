@@ -4938,45 +4938,23 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".spa.SpaActivity"
-            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
-            android:knownActivityEmbeddingCerts="@array/config_known_host_certs"
-            android:exported="false" />
-        <activity android:name=".spa.SpaBridgeActivity" android:exported="false"/>
-        <activity android:name=".spa.SpaAppBridgeActivity" android:exported="false"/>
-
-        <activity android:name=".Settings$FingerprintSettingsActivityV2"
-            android:label="@string/security_settings_fingerprint_preference_title"
-            android:exported="false"
-            android:icon="@drawable/ic_fingerprint_header">
-            <intent-filter>
-                <action android:name="android.settings.FINGERPRINT_SETTINGS_V2" />
+        <!-- tequilaSettings -->
+        <activity android:name=".Settings$tequilaSettingsActivity"
+            android:label="@string/tequila_settings_title"
+            android:icon="@drawable/ic_tequila_settings"
+            android:parentActivityName="com.android.settings"
+            android:exported="true">
+            <intent-filter android:priority="69">
+                <action android:name="com.android.settings.TEQUILA_SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
-                android:value="com.android.settings.biometrics.fingerprint2.ui.fragment.FingerprintSettingsV2Fragment" />
-            <meta-data android:name="com.android.settings.HIGHLIGHT_MENU_KEY"
-                android:value="@string/menu_key_security"/>
-        </activity>
-
-        <activity-alias android:name="UsageStatsActivity"
-                        android:exported="true"
-                        android:label="@string/testing_usage_stats"
-                        android:targetActivity=".spa.SpaBridgeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEVELOPMENT_PREFERENCE" />
+                <category android:name="com.android.settings.SHORTCUT" />
             </intent-filter>
-            <meta-data android:name="com.android.settings.spa.DESTINATION"
-                       android:value="UsageStats"/>
-        </activity-alias>
-
-        <!-- [b/197780098] Disable eager initialization of Jetpack libraries. -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove" />
+            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
+                android:value="com.tequila.settings.tequilaSettings" />
+        </activity>
 
         <!-- This is the longest AndroidManifest.xml ever. -->
     </application>

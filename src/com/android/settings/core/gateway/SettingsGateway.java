@@ -195,6 +195,8 @@ import com.android.settings.wifi.p2p.WifiP2pSettings;
 import com.android.settings.wifi.savedaccesspoints2.SavedAccessPointsWifiSettings2;
 import com.android.settings.wifi.tether.WifiTetherSettings;
 
+import com.tequila.settings.tequilaSettings;
+
 import ink.kscope.settings.wifi.tether.WifiTetherClientManager;
 
 public class SettingsGateway {
@@ -373,6 +375,7 @@ public class SettingsGateway {
             OneHandedSettings.class.getName(),
             MobileNetworkSettings.class.getName(),
             AppLocaleDetails.class.getName(),
+            tequilaSettings.class.getName()
             TurnScreenOnDetails.class.getName(),
             NfcAndPaymentFragment.class.getName(),
             ColorAndMotionFragment.class.getName(),
@@ -425,6 +428,7 @@ public class SettingsGateway {
             Settings.MyDeviceInfoActivity.class.getName(),
             Settings.ModuleLicensesActivity.class.getName(),
             UserBackupSettingsActivity.class.getName(),
+            Settings.tequilaSettingsActivity.class.getName(),
             Settings.MemtagPageActivity.class.getName(),
             Settings.NavigationModeSettingsActivity.class.getName(),
     };
