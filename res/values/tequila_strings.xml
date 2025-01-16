@@ -268,4 +268,6 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_enforcing">Enforcing</string>
 
+    <!-- Tequila maintainer -->
+    <string name="tequila_maintainer_title">Sylvix maintainer</string>
 </resources>

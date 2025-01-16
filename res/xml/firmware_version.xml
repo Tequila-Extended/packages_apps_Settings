@@ -38,6 +38,14 @@
         settings:enableCopying="true"
         settings:controller="com.android.settings.deviceinfo.firmwareversion.tequilaVersionDetailPreferenceController"/>
     
+    <!-- Tequila maintainer  -->
+    <Preference
+        android:key="tequila_maintainer"
+        android:title="@string/tequila_maintainer_title"
+        android:summary="@string/summary_placeholder"
+        settings:enableCopying="true"
+        settings:controller="com.android.settings.deviceinfo.firmwareversion.TequilaMaintainerPreferenceController"/>
+
     <!-- SELinux -->
     <Preference
     android:key="selinux_status"
