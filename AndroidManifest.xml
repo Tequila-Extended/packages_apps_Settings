@@ -4938,7 +4938,7 @@
             </intent-filter>
         </activity>
 
-        <activity
+                <activity
             android:name=".spa.SpaActivity"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:knownActivityEmbeddingCerts="@array/config_known_host_certs"
