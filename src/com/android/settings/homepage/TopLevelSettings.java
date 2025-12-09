@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,6 +22,7 @@ import static com.android.settingslib.search.SearchIndexable.MOBILE;
 import android.app.ActivityManager;
 import android.app.settings.SettingsEnums;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -67,15 +68,14 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
     private boolean mScrollNeeded = true;
     private boolean mFirstStarted = true;
     private ActivityEmbeddingController mActivityEmbeddingController;
+    private boolean gAppsExists;
 
     public TopLevelSettings() {
         final Bundle args = new Bundle();
-        // Disable the search icon because this page uses a full search view in actionbar.
         args.putBoolean(NEED_SEARCH_ICON_IN_ACTION_BAR, false);
         setArguments(args);
     }
 
-    /** Dependency injection ctor only for testing. */
     @VisibleForTesting
     public TopLevelSettings(TopLevelHighlightMixin highlightMixin) {
         this();
@@ -100,13 +100,13 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        gAppsExists = checkIfGoogleAppsExist(context);
         HighlightableMenu.fromXml(context, getPreferenceScreenResId());
         use(SupportPreferenceController.class).setActivity(getActivity());
     }
 
     @Override
     public int getHelpResource() {
-        // Disable the help icon because this page uses a full search view in actionbar.
         return 0;
     }
 
@@ -121,7 +121,6 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
             return true;
         }
 
-        // Register SplitPairRule for SubSettings.
         ActivityEmbeddingRulesController.registerSubSettingsPairRule(getContext(),
                 true /* clearTop */);
 
@@ -165,7 +164,6 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
         }
     }
 
-    /** Wrap ActivityEmbeddingController#isActivityEmbedded for testing. */
     @VisibleForTesting
     public boolean isActivityEmbedded() {
         if (mActivityEmbeddingController == null) {
@@ -182,8 +180,6 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
                     getContext());
         } else if (mIsEmbeddingActivityEnabled && isOnlyOneActivityInTask()
                 && !isActivityEmbedded()) {
-            // Set default highlight menu key for 1-pane homepage since it will show the placeholder
-            // page once changing back to 2-pane.
             Log.i(TAG, "Set default menu key");
             setHighlightMenuKey(getString(SettingsHomepageActivity.DEFAULT_HIGHLIGHT_MENU_KEY),
                     /* scrollNeeded= */ false);
@@ -195,6 +191,16 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
         final ActivityManager.RunningTaskInfo taskInfo = getSystemService(ActivityManager.class)
                 .getRunningTasks(1).get(0);
         return taskInfo.numActivities == 1;
+    }
+
+    private boolean checkIfGoogleAppsExist(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            packageManager.getPackageInfo("com.google.android.gsf", 0);
+            return true; 
+        } catch (PackageManager.NameNotFoundException e) {
+            return false; 
+        }
     }
 
     @Override
@@ -215,6 +221,45 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
                 icon.setTint(tintColor);
             }
         });
+        onSetPrefCard();
+    }
+
+    private void onSetPrefCard() {
+        final PreferenceScreen screen = getPreferenceScreen();
+        final int count = screen.getPreferenceCount();
+        for (int i = 0; i < count; i++) {
+            final Preference preference = screen.getPreference(i);
+
+            String key = preference.getKey();
+            
+            if ("top_level_connected_devices".equals(key)) {
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_bluetooth);
+            } else if (key.equals("top_level_network")
+                || key.equals("top_level_apps")
+                || key.equals("top_level_accessibility")
+                || key.equals("top_level_emergency")
+                || key.equals("top_level_system")){
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_top);
+            } else if (key.equals("top_level_tequila_settings")){
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_single);
+            } else if (key.equals("top_level_battery")
+                || key.equals("top_level_display")
+                || key.equals("top_level_security")
+                || key.equals("top_level_privacy")
+                || key.equals("top_level_safety_center")
+                || key.equals("top_level_storage")
+                || key.equals("top_level_wellbeing")
+                || key.equals("top_level_notifications")
+                || key.equals("top_level_sound")){
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_middle);
+            } else if ("top_level_google".equals(key)){
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_bottom);
+            } else if (key.equals("top_level_accounts") && gAppsExists){
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_middle);
+            } else {
+                preference.setLayoutResource(R.layout.superioros_dashboard_preference_bottom);
+            }
+       }
     }
 
     @Override
@@ -248,7 +293,6 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
         return recyclerView;
     }
 
-    /** Sets the horizontal padding */
     public void setPaddingHorizontal(int padding) {
         mPaddingHorizontal = padding;
         RecyclerView recyclerView = getListView();
@@ -257,7 +301,6 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
         }
     }
 
-    /** Updates the preference internal paddings */
     public void updatePreferencePadding(boolean isTwoPane) {
         iteratePreferences(new PreferenceJob() {
             private int mIconPaddingStart;
@@ -285,38 +328,28 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
         });
     }
 
-    /** Returns a {@link TopLevelHighlightMixin} that performs highlighting */
     public TopLevelHighlightMixin getHighlightMixin() {
         return mHighlightMixin;
     }
 
-    /** Highlight a preference with specified preference key */
     public void setHighlightPreferenceKey(String prefKey) {
-        // Skip Tips & support since it's full screen
         if (mHighlightMixin != null && !TextUtils.equals(prefKey, PREF_KEY_SUPPORT)) {
             mHighlightMixin.setHighlightPreferenceKey(prefKey);
         }
     }
 
-    /** Returns whether clicking the specified preference is considered as a duplicate click. */
     public boolean isDuplicateClick(Preference pref) {
-        /* Return true if
-         * 1. the device supports activity embedding, and
-         * 2. the target preference is highlighted, and
-         * 3. the current activity is embedded */
         return mHighlightMixin != null
                 && TextUtils.equals(pref.getKey(), mHighlightMixin.getHighlightPreferenceKey())
                 && isActivityEmbedded();
     }
 
-    /** Show/hide the highlight on the menu entry for the search page presence */
     public void setMenuHighlightShowed(boolean show) {
         if (mHighlightMixin != null) {
             mHighlightMixin.setMenuHighlightShowed(show);
         }
     }
 
-    /** Highlight and scroll to a preference with specified menu key */
     public void setHighlightMenuKey(String menuKey, boolean scrollNeeded) {
         if (mHighlightMixin != null) {
             mHighlightMixin.setHighlightMenuKey(menuKey, scrollNeeded);
@@ -380,7 +413,6 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
 
                 @Override
                 protected boolean isPageSearchEnabled(Context context) {
-                    // Never searchable, all entries in this page are already indexed elsewhere.
                     return false;
                 }
             };

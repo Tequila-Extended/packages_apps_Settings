@@ -40,7 +40,7 @@
         settings:highlightableMenuKey="@string/menu_key_communal"
         settings:controller="com.android.settings.communal.CommunalPreferenceController"/>
 
-    <com.android.settings.widget.HomepagePreference
+    <com.android.settings.homepage.BluetoothCardPreference
         android:fragment="com.android.settings.connecteddevice.ConnectedDeviceDashboardFragment"
         android:icon="@drawable/ic_devices_other"
         android:key="top_level_connected_devices"
@@ -48,13 +48,11 @@
         android:title="@string/connected_devices_dashboard_title"
         android:summary="@string/connected_devices_dashboard_default_summary"
         settings:highlightableMenuKey="@string/menu_key_connected_devices"
-        settings:controller="com.android.settings.connecteddevice.TopLevelConnectedDevicesPreferenceController"/>
+        settings:controller="com.android.settings.homepage.BluetoothCardController"/>
 
     <com.android.settings.widget.HomepagePreference
         android:key="top_level_tequila_settings"
         android:title="@string/tequila_settings_title"
-        android:summary="@string/tequila_settings_summary"
-        android:icon="@drawable/ic_tequila_settings"
         android:order="-155"
         android:fragment="com.tequila.settings.tequilaSettings" />
 

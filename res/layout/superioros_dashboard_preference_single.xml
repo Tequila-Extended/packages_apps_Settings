@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2007 The Android Open Source Project
-     Copyright (C) 2020 ArrowOS
+<!--
+     Copyright 2023 The SuperiorOS Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,12 +14,15 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    style="@style/superiorDashboardPreferenceSingle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <include
+        layout="@layout/superioros_dashboard_pref_single"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-    <!-- Whether SELinux status should be shown or not. -->
-    <bool name="config_show_selinux_status">true</bool>
-
-    <!-- Screen resolution -->
-    <string name="custom_screen_resolution_title">Custom screen resolution</string>
-</resources>
+</FrameLayout>

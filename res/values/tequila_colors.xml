@@ -1,0 +1,9 @@
+<resources
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+
+    <!-- Battery color -->
+    <color name="green_percentage">#02C205</color>
+    <color name="orange_percentage">#FF7700</color>
+    <color name="red_percentage">#FF1100</color>
+    
+</resources>

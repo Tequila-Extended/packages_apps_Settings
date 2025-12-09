@@ -21,8 +21,8 @@
     <string name="total_ram">Total RAM</string>
 
     <!-- Black theme -->
-    <string name="system_black_theme_title">Use black theme</string>
-    <string name="system_black_theme_summary">Force black background colors</string>
+    <string name="system_black_theme_title">Extra dark mode</string>
+    <string name="system_black_theme_summary">Enhance darkness for better contrast</string>
 
     <!-- Ignore secure window -->
     <string name="ignore_window_secure_title">Ignore window secure flags</string>

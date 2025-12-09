@@ -443,4 +443,9 @@
     <dimen name="screen_flash_color_button_inner_circle_size">42dp</dimen>
     <dimen name="screen_flash_color_button_inner_circle_padding">3dp</dimen>
     <dimen name="screen_flash_color_button_inner_circle_stroke">1dp</dimen>
+    
+    <!-- Superior dimensions -->
+    <dimen name="superior_pref_horizontal_padding">16dp</dimen>
+    <dimen name="superior_radius">28dp</dimen>
+    <dimen name="superior_radius_merge">5dp</dimen>
 </resources>

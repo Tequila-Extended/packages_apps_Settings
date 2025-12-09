@@ -19,9 +19,13 @@ package com.android.settings.deviceinfo;
 import android.content.Context;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.format.Formatter;
+import android.text.style.ForegroundColorSpan;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 
 import com.android.settings.R;
@@ -62,8 +66,7 @@ public class TopLevelStoragePreferenceController extends BasePreferenceControlle
 
     @VisibleForTesting
     protected Future refreshSummaryThread(Preference preference) {
-        int userId = Utils.getCurrentUserId(mContext.getSystemService(UserManager.class),
-                /* isWorkProfile */ false);
+        int userId = Utils.getCurrentUserId(mContext.getSystemService(UserManager.class), false);
         final StorageCacheHelper storageCacheHelper = new StorageCacheHelper(mContext, userId);
         long cachedUsedSize = storageCacheHelper.retrieveUsedSize();
         long cachedTotalSize = storageCacheHelper.retrieveCachedSize().totalSize;
@@ -89,11 +92,32 @@ public class TopLevelStoragePreferenceController extends BasePreferenceControlle
         return mStorageManagerVolumeProvider;
     }
 
-    private String getSummary(long usedBytes, long totalBytes) {
+    private CharSequence getSummary(long usedBytes, long totalBytes) {
         NumberFormat percentageFormat = NumberFormat.getPercentInstance();
+        double usedPercentage = totalBytes == 0 ? 0 : ((double) usedBytes) / totalBytes;
+        String percentageString = percentageFormat.format(usedPercentage);
+        String freeSpaceString = Formatter.formatFileSize(mContext, totalBytes - usedBytes);
 
-        return mContext.getString(R.string.storage_summary,
-                totalBytes == 0L ? "0" : percentageFormat.format(((double) usedBytes) / totalBytes),
-                Formatter.formatFileSize(mContext, totalBytes - usedBytes));
+        int color;
+        if (usedPercentage < 0.5) {
+            color = ContextCompat.getColor(mContext, R.color.green_percentage);
+        } else if (usedPercentage < 0.8) {
+            color = ContextCompat.getColor(mContext, R.color.orange_percentage);
+        } else {
+            color = ContextCompat.getColor(mContext, R.color.red_percentage);
+        }
+
+        String summaryText = mContext.getString(R.string.storage_summary, percentageString, freeSpaceString);
+        SpannableString spannableSummary = new SpannableString(summaryText);
+
+        int start = summaryText.indexOf(percentageString);
+        if (start >= 0) {
+            spannableSummary.setSpan(new ForegroundColorSpan(color),
+                    start,
+                    start + percentageString.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        return spannableSummary;
     }
 }

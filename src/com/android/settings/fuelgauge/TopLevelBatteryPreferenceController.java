@@ -19,9 +19,13 @@ package com.android.settings.fuelgauge;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.BatteryManager;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
 
@@ -62,9 +66,8 @@ public class TopLevelBatteryPreferenceController extends BasePreferenceControlle
                 Log.d(TAG, "getBatteryInfo: " + info);
                 mBatteryInfo = info;
                 updateState(mPreference);
-                // Update the preference summary text to the latest state.
                 setSummaryAsync(info);
-            }, true /* shortString */);
+            }, true);
         });
 
         mBatteryStatusFeatureProvider = FeatureFactory.getFactory(context)
@@ -95,11 +98,10 @@ public class TopLevelBatteryPreferenceController extends BasePreferenceControlle
 
     @Override
     public CharSequence getSummary() {
-        return getSummary(true /* batteryStatusUpdate */);
+        return getSummary(true);
     }
 
     private CharSequence getSummary(boolean batteryStatusUpdate) {
-        // Display help message if battery is not present.
         if (!mIsBatteryPresent) {
             return mContext.getText(R.string.battery_missing_message);
         }
@@ -122,13 +124,11 @@ public class TopLevelBatteryPreferenceController extends BasePreferenceControlle
 
     private void setSummaryAsync(BatteryInfo info) {
         ThreadUtils.postOnBackgroundThread(() -> {
-            // Return false if built-in status should be used, will use updateBatteryStatus()
-            // method to inject the customized battery status label.
             final boolean triggerBatteryStatusUpdate =
                     mBatteryStatusFeatureProvider.triggerBatteryStatusUpdate(this, info);
             ThreadUtils.postOnMainThread(() -> {
                 if (!triggerBatteryStatusUpdate) {
-                    mBatteryStatusLabel = null; // will generateLabel()
+                    mBatteryStatusLabel = null;
                 }
                 mPreference.setSummary(
                         mBatteryStatusLabel == null ? generateLabel(info) : mBatteryStatusLabel);
@@ -137,34 +137,60 @@ public class TopLevelBatteryPreferenceController extends BasePreferenceControlle
     }
 
     private CharSequence generateLabel(BatteryInfo info) {
+        String batteryPercentString = info.batteryPercentString;
+        int batteryPercentage = info.batteryLevel;
+
+        int color;
+        if (batteryPercentage >= 60) {
+            color = ContextCompat.getColor(mContext, R.color.green_percentage);
+        } else if (batteryPercentage >= 30) {
+            color = ContextCompat.getColor(mContext, R.color.orange_percentage);
+        } else {
+            color = ContextCompat.getColor(mContext, R.color.red_percentage);
+        }
+
+        SpannableString percentSpan = new SpannableString(batteryPercentString);
+        percentSpan.setSpan(
+                new ForegroundColorSpan(color),
+                0,
+                batteryPercentString.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
         if (Utils.containsIncompatibleChargers(mContext, TAG)) {
             return mContext.getString(R.string.battery_info_status_not_charging);
         }
         if (info.batteryStatus == BatteryManager.BATTERY_STATUS_NOT_CHARGING) {
-            // Present status only if no remaining time or status anomalous
             return info.statusLabel;
         } else if (!info.discharging && info.chargeLabel != null) {
             return info.chargeLabel;
         } else if (info.remainingLabel == null) {
-            return info.batteryPercentString;
+            return percentSpan;
         } else {
-            return mContext.getString(R.string.power_remaining_settings_home_page,
-                    info.batteryPercentString,
+            String remainingLabel = mContext.getString(R.string.power_remaining_settings_home_page,
+                    batteryPercentString,
                     info.remainingLabel);
+
+            SpannableString fullLabel = new SpannableString(remainingLabel);
+            int percentIndex = remainingLabel.indexOf(batteryPercentString);
+
+            if (percentIndex >= 0) {
+                fullLabel.setSpan(
+                        new ForegroundColorSpan(color),
+                        percentIndex,
+                        percentIndex + batteryPercentString.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            return fullLabel;
         }
     }
 
-    /**
-     * Callback which receives text for the label.
-     */
     @Override
     public void updateBatteryStatus(String label, BatteryInfo info) {
-        mBatteryStatusLabel = label; // Null if adaptive charging is not active
+        mBatteryStatusLabel = label;
         if (mPreference == null) {
             return;
         }
-        // Do not triggerBatteryStatusUpdate() here to cause infinite loop
-        final CharSequence summary = getSummary(false /* batteryStatusUpdate */);
+        final CharSequence summary = getSummary(false);
         if (summary != null) {
             mPreference.setSummary(summary);
         }
